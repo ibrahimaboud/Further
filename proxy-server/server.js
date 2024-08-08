@@ -6,7 +6,7 @@ const app = express();
 const port = 3001;
 
 app.use(cors({
-    origin: 'http://localhost:3000', // or the specific origin where your frontend is running
+    origin: 'http://localhost:3000', 
     methods: 'GET,POST',
     allowedHeaders: 'Content-Type'
 }));
