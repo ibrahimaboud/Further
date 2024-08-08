@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import background from '../src/background1.jpg';
 
 function UserForm() {
     const [formData, setFormData] = useState({
@@ -16,10 +17,24 @@ function UserForm() {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Trigger the Google Tag Manager event
+        // Form Validation
+        if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone) {
+            alert('All fields are required.');
+            return;
+        }
+
+        const data = {
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email,
+            phone: formData.phone
+        };
+
+        console.log('Form Data:', data);
+
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({
             event: 'formSubmission',
@@ -29,18 +44,54 @@ function UserForm() {
             phone: formData.phone
         });
 
-        alert('Form submitted successfully!');
-        // Clear the form after submission
-        setFormData({
-            firstName: '',
-            lastName: '',
-            email: '',
-            phone: ''
-        });
+        try {
+            const response = await fetch('http://localhost:3001/proxy', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Data sent to Zapier:', result);
+                alert('Form submitted successfully!');
+                setFormData({
+                    firstName: '',
+                    lastName: '',
+                    email: '',
+                    phone: ''
+                });
+            } else {
+                console.error('Error submitting form:', response.statusText);
+                alert('There was an error submitting the form.');
+            }
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            alert('There was an error submitting the form.');
+        }
     };
 
     return (
-        <div>
+        <div
+            className="background"
+            style={{
+                backgroundImage: `url(${background})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexDirection: 'column',
+                minHeight: '100vh',
+                width: '100vw',
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                overflow: 'hidden',
+            }}
+        >
             <h1>User Information Form</h1>
             <form onSubmit={handleSubmit}>
                 <label htmlFor="firstName">First Name:</label>
@@ -52,7 +103,7 @@ function UserForm() {
                     onChange={handleChange}
                     required
                 /><br /><br />
-                
+
                 <label htmlFor="lastName">Last Name:</label>
                 <input
                     type="text"
@@ -62,7 +113,7 @@ function UserForm() {
                     onChange={handleChange}
                     required
                 /><br /><br />
-                
+
                 <label htmlFor="email">Email:</label>
                 <input
                     type="email"
@@ -72,7 +123,7 @@ function UserForm() {
                     onChange={handleChange}
                     required
                 /><br /><br />
-                
+
                 <label htmlFor="phone">Phone Number:</label>
                 <input
                     type="tel"
@@ -82,7 +133,7 @@ function UserForm() {
                     onChange={handleChange}
                     required
                 /><br /><br />
-                
+
                 <button type="submit">Submit</button>
             </form>
         </div>
